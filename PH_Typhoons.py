@@ -38,7 +38,7 @@ def app():
     df = pd.read_csv('./ph-typhoons.csv', header=0)
 
     with st.expander('View Dataset'):
-        # Load the data
+        #Load the data
         st.write(df)    
         st.write(df.shape)
 
@@ -75,10 +75,10 @@ def app():
     y_train = y_train.to_numpy()
     y_test = y_test.to_numpy()
 
-    look_back = 12  # Number of past days to consider
-    n_features = 1  # Number of features in your typhoon data
+    look_back = 12  #Number of past days to consider
+    n_features = 1  #Number of features in your typhoon data
 
-    model =  tf.keras.Sequential([  # Use Bidirectional LSTM or GRU (comment out the other)
+    model =  tf.keras.Sequential([  #Use Bidirectional LSTM or GRU (comment out the other)
         #tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(128, return_sequences=True), input_shape=(look_back, n_features)),
         tf.keras.layers.GRU(128, return_sequences=True, input_shape=(look_back, n_features)),
         tf.keras.layers.Dropout(0.3),
@@ -90,33 +90,33 @@ def app():
     ])
 
     #Compile the model
-    model.compile(loss="mse", optimizer="adam")  # You can adjust loss and optimizer based on your needs
+    model.compile(loss="mse", optimizer="adam")  #You can adjust loss and optimizer based on your needs
 
     #Print model summary
     model.summary()
     
     if st.sidebar.button("Start Training"):
         progress_bar = st.progress(0, text="Training the LSTM network, please wait...")           
-        # Train the model
+        #Train the model
         history = model.fit(x_train, y_train, epochs=200, batch_size=64, validation_data=(x_test, y_test))
 
-        fig, ax = plt.subplots()  # Create a figure and an axes
-        ax.plot(history.history['loss'], label='Train')  # Plot training loss on ax
-        ax.plot(history.history['val_loss'], label='Validation')  # Plot validation loss on ax
+        fig, ax = plt.subplots()  #Create a figure and an axes
+        ax.plot(history.history['loss'], label='Train')  #Plot training loss on ax
+        ax.plot(history.history['val_loss'], label='Validation')  #Plot validation loss on ax
 
-        ax.set_title('Model loss')  # Set title on ax
-        ax.set_ylabel('Loss')  # Set y-label on ax
-        ax.set_xlabel('Epoch')  # Set x-label on ax
+        ax.set_title('Model loss')  #Set title on ax
+        ax.set_ylabel('Loss')  #Set y-label on ax
+        ax.set_xlabel('Epoch')  #Set x-label on ax
 
-        ax.legend()  # Add legend
+        ax.legend()  #Add legend
         st.pyplot(fig)
         st.session_state.model = model
 
         #update the progress bar
         for i in range(100):
-            # Update progress bar value
+            #Update progress bar value
             progress_bar.progress(i + 1)
-            # Simulate some time-consuming task (e.g., sleep)
+            #Simulate some time-consuming task (e.g., sleep)
             time.sleep(0.01)
         #Progress bar reaches 100% after the loop completes
         st.success("LSTM Network training completed!") 
@@ -160,7 +160,7 @@ def app():
         #Use the model to predict the next year of data
         input_seq_len = 24         
         num_features=1
-        last_seq = data_norm[-input_seq_len:] # Use the last year of training data as the starting sequence
+        last_seq = data_norm[-input_seq_len:] #Use the last year of training data as the starting sequence
 
         preds = []
         for i in range(pred_period):
