@@ -46,7 +46,7 @@ def app():
     df.index = np.array(df['Month'], dtype='datetime64')
     time_axis = df.index
 
-    # Plot the data
+    #Plot the data
     fig, ax = plt.subplots()
     ax.plot(df['Typhoons']) 
     ax.set_xlabel("Time")
@@ -54,22 +54,22 @@ def app():
     ax.set_title("Time Series Plot of Typhoons")
     st.pyplot(fig)    
 
-    # Normalize the data
+    #Normalize the data
     scaler = MinMaxScaler(feature_range=(0, 1))
     data_norm = scaler.fit_transform(df.iloc[:,1].values.reshape(-1, 1))
     data_norm = pd.DataFrame(data_norm)
     st.session_state.data_norm = data_norm
 
-    # Split the data into training and testing sets
+    #Split the data into training and testing sets
     train_size = int(len(data_norm) * 0.8)
     test_size = len(data_norm) - train_size
     train_data, test_data = data_norm.iloc[0:train_size], data_norm.iloc[train_size:len(data_norm)]
 
-    # Convert the data to numpy arrays
+    #Convert the data to numpy arrays
     x_train, y_train = train_data.iloc[:-1], train_data.iloc[1:]
     x_test, y_test = test_data.iloc[:-1], test_data.iloc[1:]
 
-    # Reshape the data to match the input shape of the LSTM model
+    #Reshape the data to match the input shape of the LSTM model
     x_train = np.reshape(x_train.to_numpy(), (x_train.shape[0], 1, x_train.shape[1]))
     x_test = np.reshape(x_test.to_numpy(), (x_test.shape[0], 1, x_test.shape[1]))
     y_train = y_train.to_numpy()
@@ -89,10 +89,10 @@ def app():
         tf.keras.layers.Dense(1)
     ])
 
-    # Compile the model
+    #Compile the model
     model.compile(loss="mse", optimizer="adam")  # You can adjust loss and optimizer based on your needs
 
-    # Print model summary
+    #Print model summary
     model.summary()
     
     if st.sidebar.button("Start Training"):
@@ -112,13 +112,13 @@ def app():
         st.pyplot(fig)
         st.session_state.model = model
 
-        # update the progress bar
+        #update the progress bar
         for i in range(100):
             # Update progress bar value
             progress_bar.progress(i + 1)
             # Simulate some time-consuming task (e.g., sleep)
             time.sleep(0.01)
-        # Progress bar reaches 100% after the loop completes
+        #Progress bar reaches 100% after the loop completes
         st.success("LSTM Network training completed!") 
 
     years = st.sidebar.slider(   
@@ -131,7 +131,7 @@ def app():
 
 
     if st.sidebar.button("Predictions"):
-        # Get the predicted values and compute the accuracy metrics
+        #Get the predicted values and compute the accuracy metrics
         y_pred_train = model.predict(x_train)
         y_pred_test = model.predict(x_test)
 
@@ -146,18 +146,18 @@ def app():
 
         model = st.session_state.model
         data_norm = st.session_state.data_norm
-        # Get predicted data from the model using the normalized values
+        #Get predicted data from the model using the normalized values
         predictions = model.predict(data_norm)
 
-        # Inverse transform the predictions to get the original scale
+        #Inverse transform the predictions to get the original scale
         predvalues = scaler.inverse_transform(np.array(predictions).reshape(-1, 1))
         predvalues = pd.DataFrame(predvalues)
 
-        # Convert column 'Typhoons' to integer
+        #Convert column 'Typhoons' to integer
         predvalues[0] = predvalues[0].astype(int)
 
         pred_period = years * 12    
-        # Use the model to predict the next year of data
+        #Use the model to predict the next year of data
         input_seq_len = 24         
         num_features=1
         last_seq = data_norm[-input_seq_len:] # Use the last year of training data as the starting sequence
@@ -171,14 +171,14 @@ def app():
             last_seq = np.vstack((last_seq[1:], pred[0]))
             last_seq = pd.DataFrame(last_seq)
 
-        # Inverse transform the predictions to get the original scale
+        #Inverse transform the predictions to get the original scale
         prednext = scaler.inverse_transform(np.array(preds).reshape(-1, 1))
 
         #flatten the array from 2-dim to 1-dim
         prednext = [item for sublist in prednext for item in sublist]
 
 
-        # Generate an array of datetime64 objects from January 1976 to December 1976
+        #Generate an array of datetime64 objects from January 1976 to December 1976
         if pred_period == 12:
             end = '2023-12'
         elif pred_period == 24:
@@ -194,10 +194,10 @@ def app():
 
         months = pd.date_range(start='2023-01', end=end, freq='MS')
 
-        # Create a Pandas DataFrame with the datetime and values columns
+        #Create a Pandas DataFrame with the datetime and values columns
         nextyear = pd.DataFrame({'Month': months, 'Typhoons': prednext})
 
-        # Convert column 'Typhoons' to integer
+        #Convert column 'Typhoons' to integer
         nextyear['Typhoons'] = nextyear['Typhoons'].astype(int)
 
         time_axis = np.linspace(0, df.shape[0]-1, pred_period)
@@ -207,16 +207,16 @@ def app():
         fig = plt.figure()
         ax = fig.add_axes([0, 0, 2.1, 2])
 
-        # make the prediction plot resize based on the years
+        #make the prediction plot resize based on the years
         ax1 = fig.add_axes([2.3, 0, 0.15 * years, 2])
 
         ax.set_title('Comparison of Actual and Predicted Data')
         ax.plot(df.iloc[:,1].values, label='Original Dataset')
         ax.plot(list(predvalues[0]), color='red', label='Model  Predictions')
 
-        # Get the maximum y-value among both datasets
+        #Get the maximum y-value among both datasets
         max_y_value = max(df.iloc[:,1].values.max(), nextyear['Typhoons'].max())+2
-        # Set the same y-limits for both axes
+        #Set the same y-limits for both axes
         ax.set_ylim(0, max_y_value)
         ax1.set_ylim(0, max_y_value)
 
